@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% load static %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+ <nav class="navbar navbar-light bg-light">
+    <div class="container-fluid">
+        <div class="navbar-header">
+              <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Home</a>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+            {% if user.is_authenticated %}
+            <li>
+                <a class="btn btn-link" href="#">{{ user.first_name }}({{ user.username }})</a>
+                <a class="btn btn-link" href="{% url 'onlinecourse:logout' %}">Logout</a>
+            </li>
+            {% else %}
+            <li>
+                <form class="form-inline" action="{% url 'onlinecourse:login' %}" method="post">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Username" name="username" >
+                        <input type="password" class="form-control" placeholder="Username" name="psw" >
+                        <button class="btn btn-primary" type="submit">Login</button>
+                        <a class="btn btn-link" href="{% url 'onlinecourse:registration' %}">Sign Up</a>
+                    </div>
+                </form>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    {% if total_score >= course.passing_score %}
+    <div class="alert alert-success">
+        Congratulations! You have passed the exam.
+    </div>
+    {% else %}
+    <div class="alert alert-danger">
+        Unfortunately, you have not passed the exam.
+    </div>
+    <a class="btn btn-link text-danger" href="{% url 'onlinecourse:course_details' course.id %}">Re-test</a>
+    {% endif %}
+    
+    <div class="card-columns mt-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Exam results</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Total Score: {{ total_score }}/{{ course.total_questions }}</p>
+                <ul class="list-group">
+                    {% for question in course.question_set.all %}
+                    <li class="list-group-item">
+                        {{ question.text }}
+                        {% if question.choice_set.first.id in selected_choice_ids %}
+                            {% if question.choice_set.first.is_correct %}
+                            <span class="badge badge-success float-right">Correct</span>
+                            {% else %}
+                            <span class="badge badge-danger float-right">Incorrect</span>
+                            {% endif %}
+                        {% else %}
+                        <span class="badge badge-secondary float-right">Not answered</span>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
